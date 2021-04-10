@@ -5,11 +5,13 @@ const MOVE_LEFT_KEY = "ui_left"
 const MOVE_UP_KEY = "ui_up"
 const MOVE_DOWN_KEY = "ui_down"
 
-const MOVE_SPEED = 4
-const MAX_SPEED = 100
-const ACCELERATION = 10
+const MAX_SPEED = 80
+const ACCELERATION = 500
+const FRICTION = 500
 
 var velocity = Vector2.ZERO
+
+onready var animationPlayer = $AnimationPlayer
 
 func _physics_process(delta):
 	var input_vector = Vector2.ZERO
@@ -18,8 +20,13 @@ func _physics_process(delta):
 	input_vector = input_vector.normalized()
 
 	if input_vector != Vector2.ZERO:
-		velocity += input_vector * ACCELERATION
+		if input_vector.x > 0:
+			animationPlayer.play("RunRight")
+		else:
+			animationPlayer.play("RunLeft")
+		velocity = velocity.move_toward(input_vector * MAX_SPEED, ACCELERATION * delta)
 	else:
-		velocity = Vector2.ZERO
+		animationPlayer.play("IdleRight")
+		velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
 
-	move_and_collide(velocity * delta)
+	velocity = move_and_slide(velocity)
